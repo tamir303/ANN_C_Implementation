@@ -60,3 +60,44 @@ int argmax(vector_t v, int size) {
 	
 	return max_index;
 }
+
+void normalize(double arr[][30], int rows, int cols) {
+	for (int j = 0; j < cols; ++j) {
+		// Extract a column
+		double* column_data = (double*) dynamicAllocation(sizeof(double) * rows);
+
+		for (int i = 0; i < rows; ++i) {
+			column_data[i] = arr[i][j];
+		}
+
+		// Calculate mean and standard deviation of the column
+		double mean_val = mean(column_data, rows);
+		double std_dev = stddev(column_data, rows, mean_val);
+
+		// Normalize the column
+		for (int i = 0; i < rows; ++i) {
+			arr[i][j] = (arr[i][j] - mean_val) / std_dev;
+		}
+	}
+}
+
+double mean(double* data, int size) {
+	double sum = 0.0;
+
+	#pragma omp parallel for reduction(+ : sum)
+	for (int i = 0; i < size; ++i) {
+		sum += data[i];
+	}
+	return sum / size;
+}
+
+double stddev(double* data, int size, double mean_val) {
+	double sum_squared_diff = 0.0;
+
+	#pragma omp parallel for reduction(+ : sum_squared_diff)
+	for (int i = 0; i < size; ++i) {
+		sum_squared_diff += pow(data[i] - mean_val, 2);
+	}
+
+	return sqrt(sum_squared_diff / (double) size);
+}

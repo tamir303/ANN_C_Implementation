@@ -17,6 +17,8 @@ void init_neuron(Neuron* n, int num_of_weights) {
 			double rand_value = ( ((double) rand() / RAND_MAX) * 2 - 1 ) * SCALER;
 			n->weights[i] = rand_value;
 		}
+
+	n->bias = (((double)rand() / RAND_MAX) * 2 - 1) * SCALER;
 }
 
 Neuron* create_neurons(int num_of_units, int num_of_weights) {

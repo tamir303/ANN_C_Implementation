@@ -1,6 +1,7 @@
 #pragma once
 
 #define NUM_OF_LOSS 2
+#define EPS 1e-7
 
 // Mean Squeard Error
 double MSE(const double* predict, const double* label, int n);

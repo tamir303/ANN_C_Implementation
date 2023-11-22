@@ -30,30 +30,41 @@ To get started with Neural Network C Implementation, follow these steps:
 ```c
 #include "Model/Network.h"
 
-int main() {
-    // Create a new neural network
-    Network* network = initEmptyNetwork();
+void main() {
+	
+	// Create Layers configurations for Network
+	Config conf =
+	{
+		.num_layers = 4,
+		.input_layer = 2,
+		.layers = {
+			{32, "relu"},
+			{64, "relu"},
+			{1, "sigmoid"}
+		}
+	};
+	
+	// Initalize Network
+	Network* ann = init_network(conf, "binary_crossentropy");
 
-    // Define input layer
-    Layer* input_layer = Input(3);
+	Input x_train = {
+		.data = { {1, 2}, {3, 4 }, {5, 6}, {5, 5 }, {5, 4}, {4, 5}, {9, 10} },
+		.rows = 6,
+		.cols = 2
+	};
 
-    // Define hidden layer with a specified activation function
-    Layer* hidden_layer = Dense(6, "relu");
+	Input y_train = {
+		.data = {{0}, {0}, {1}, {1}, {0}, {0}, {1} },
+		.rows = 6,
+		.cols = 1
+	};
 
-    // Define output layer with a different activation function
-    Layer* output_layer = Output(2, "sigmoid");
+	// Train Network 
+	fit(ann, x_train, y_train, 10);
+	
+	// Save model to be loaded later
+	save_model(ann);
 
-    // Add layers to the network
-    add(network, 3, input_layer, hidden_layer, output_layer);
-
-    // Compile the model with a loss function
-    compile(network, "mse");
-
-    // Train the model and make predictions
-    // ...
-
-    // Clean up memory
-    destroyNetwork(network);
-
-    return 0;
+	// Free Network
+	free_network(ann);
 }

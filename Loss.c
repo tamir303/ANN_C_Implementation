@@ -36,12 +36,11 @@ double d_MSE(const double predict, const double label) {
 // BCE = - (1 / N) * sum(Y_label * log(Y_pred) + (1 - Y_label) * log(1 - Y_pred)
 double BCE(const double* predict, const double* label, int n) {
 	double sum = 0.0;
-	#pragma omp parallel for reduction(+:sum)
-	for (int i = 0; i < n; i++)
-		if (predict[i] == 1)
-			sum += predict[i] != label[i];
-		else
-			sum += label[i] * log(predict[i]) + (1 - label[i]) * log(1 - predict[i]);
+	#pragma omp parallel for reduction(+ : sum)
+	for (int i = 0; i < n; i++) {
+		double eps = predict[i] == 0 ? EPS : -EPS;
+		sum += label[i] * log(eps + predict[i]) + (1 - label[i]) * log(1 - (eps + predict[i]));
+	}
 
 	return abs(sum) / (double) n;
 }

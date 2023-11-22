@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <omp.h>
-#include <string.h>
-
 #include "Utils/NetworkUtils.h"
 #include "Utils/CommonUtils.h"
 
@@ -25,10 +20,9 @@ EOutputType getTypeOfOutput(const char* loss_name) {
  * @param ann Pointer to the neural network structure.
  * @param data Array representing the input data to the neural network.
  */
-double* forward(Network* ann, double* data) {
+void forward(Network* ann, double* data) {
 	// Get the number of layers in the neural network
 	int num_layers = ann->num_layers;
-	double* output = (double*) dynamicAllocation(sizeof(double) * ann->layers[num_layers - 1].num_neu);
 
 	// Get the number of neurons in the first layer
 	int first_layer_neu_num = ann->layers[0].num_neu;
@@ -61,13 +55,8 @@ double* forward(Network* ann, double* data) {
 			double wx = vector_prod(prev_layer_vect, curr_neuron->weights, curr_neuron->num_weights);
 			double z = actv(wx + curr_neuron->bias); // z = A(wx + b)
 			curr_neuron->z = z;
-
-			if (i == num_layers - 1)
-				output[i] = curr_neuron->z;
 		}
 	}
-
-	return output;
 }
 
 /**
@@ -184,7 +173,6 @@ double calculate_gradient_and_update_weights(Network* ann,
 
 double classify_prediction(Network* ann, double* prediction) {
 	EOutputType type = ann->type;
-	double res[] = { 0 };
 
 	switch (type)
 	{
@@ -193,14 +181,38 @@ double classify_prediction(Network* ann, double* prediction) {
 		{
 		case 1: // Output one neuron
 			// Sigmoid actv, assume threshold of 0.5 for now
-			return prediction[0] < 0.5 ? 1 : 0;
+			return prediction[0] < 0.5 ? 0 : 1;
 
 		case 2: // Output two neurons
-			return prediction[0] > prediction[1] ? 1 : 0;
+			return prediction[0] > prediction[1] ? 0 : 1;
 		}
 		break;
 
 	case MUL_CLASS:
 		return argmax(prediction, ann->layers[ann->num_layers - 1].num_neu);
+	}
+}
+
+void saveModel(const Network* ann) {
+	FILE* file = fopen(MODEL_FILE_NAME, "wb");
+
+	if (file != NULL) {
+		fwrite(ann, sizeof(Network), 1, file);
+		fclose(file);
+	}
+	else {
+		fprintf(stderr, "Error, Failed To Save File");
+	}
+}
+
+void loadModel(const Network* ann) {
+	FILE* file = fopen(MODEL_FILE_NAME, "rb");
+
+	if (file != NULL) {
+		fread(ann, sizeof(Network), 1, file);
+		fclose(file);
+	}
+	else {
+		fprintf(stderr, "Error, Failed To Save File");
 	}
 }

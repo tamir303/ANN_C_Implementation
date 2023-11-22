@@ -32,7 +32,8 @@ typedef struct config_attr_t {
  */
 typedef struct config_t {
 	int num_layers;
-	Config_att attributes[MAX_LAYERS];
+	int input_layer;
+	Config_att layers[MAX_LAYERS];
 } Config;
 
 typedef enum {
@@ -53,5 +54,7 @@ Network* init_network(const Config config, const char* loss_name);
 void fit(Network* const ann, Input x_train, Input y_train, int epochs);
 void predict(Network* const network, Input data);
 void free_network(Network*);
+void save_model(Network*);
+void load_model(Network*);
 
 #endif 
